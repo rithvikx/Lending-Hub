@@ -91,10 +91,10 @@ export default function Header() {
         <div className="container-lh flex items-center gap-6 py-3.5">
           <Link href="/" className="flex-shrink-0 flex items-center" aria-label="Lending Hub Home">
             <Image
-              src="/logo/lending-hub-logo.png"
+              src="/logo/logo.svg"
               alt="Lending Hub"
-              width={360}
-              height={90}
+              width={861}
+              height={250}
               className="h-[52px] w-auto md:h-[60px] object-contain object-left"
               priority
             />

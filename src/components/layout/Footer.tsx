@@ -84,10 +84,10 @@ export default function Footer() {
             <div className="lg:col-span-2">
               <Link href="/" className="inline-flex items-center mb-6" aria-label="Lending Hub Home">
                 <Image
-                  src="/logo/lending-hub-logo.png"
+                  src="/logo/logo.svg"
                   alt="Lending Hub"
-                  width={420}
-                  height={105}
+                  width={861}
+                  height={250}
                   className="h-[68px] w-auto sm:h-[80px] object-contain object-left"
                 />
               </Link>
