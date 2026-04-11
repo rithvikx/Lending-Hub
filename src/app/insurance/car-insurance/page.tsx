@@ -1,0 +1,50 @@
+import ProductPageLayout from "@/components/ProductPageLayout";
+import { Car } from "lucide-react";
+
+export const metadata = {
+  title: "Car Insurance — Lending Hub",
+  description: "Quick car insurance quotes and easy renewal. Compare plans from partner insurers with Lending Hub.",
+};
+
+export default function CarInsurancePage() {
+  return (
+    <ProductPageLayout
+      badge="Renew in Minutes"
+      title="Car Insurance"
+      tagline="Quick quotes and easy renewal for your car cover."
+      description="Car insurance is mandatory under Indian law. Lending Hub helps you compare and purchase the right motor insurance policy from our partner insurers — whether it's third-party cover or comprehensive protection. Renewals are fast, and our advisors will remind you before expiry."
+      icon={<Car size={26} style={{ color: "var(--color-primary)" }} />}
+      ctaLabel="Get Quote"
+      features={[
+        "Third-party and comprehensive cover options",
+        "Own damage protection for your vehicle",
+        "Zero depreciation add-on available",
+        "Roadside assistance coverage",
+        "Cashless claim at authorised network garages",
+        "Quick renewal with existing policy details",
+        "Personal accident cover included",
+        "No-claim bonus protection options",
+      ]}
+      eligibility={[
+        "Valid vehicle registration certificate (RC)",
+        "Previous insurance policy (for renewal)",
+        "Valid driving licence of the owner",
+        "Vehicle not declared total loss or stolen",
+        "Vehicles up to any age — cover terms vary by insurer",
+      ]}
+      documents={[
+        "Vehicle RC copy",
+        "Previous insurance policy (for renewal)",
+        "Owner's PAN Card",
+        "Aadhaar Card",
+        "Driving Licence",
+        "Vehicle inspection report (if lapsed > 90 days)",
+      ]}
+      relatedProducts={[
+        { label: "Bike Insurance", href: "/insurance/bike-insurance" },
+        { label: "Health Insurance", href: "/insurance/health-insurance" },
+        { label: "Vehicle Loan", href: "/loans/vehicle-loan" },
+      ]}
+    />
+  );
+}
