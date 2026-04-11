@@ -41,8 +41,8 @@ export const metadata: Metadata = {
     description: "Compare smarter. Apply faster. Borrow with confidence.",
   },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
   },
   robots: { index: true, follow: true },
 };
