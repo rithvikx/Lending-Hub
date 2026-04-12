@@ -1,17 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Phone, Mail, MapPin, MessageCircle, Clock, Loader2, CheckCircle } from "lucide-react";
 
-const products = [
+const DEFAULT_PRODUCTS = [
   "Personal Loan", "Business Loan", "Loan Against Property", "Vehicle Loan",
   "Car Insurance", "Bike Insurance", "Health Insurance", "Life Insurance", "Other",
 ];
 
 export default function ContactPage() {
+  const [products, setProducts] = useState(DEFAULT_PRODUCTS);
   const [form, setForm] = useState({ name: "", mobile: "", email: "", product: "", message: "", consent: false });
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+
+  // Fetch dynamic product list from CMS
+  useEffect(() => {
+    fetch("/api/cms/list")
+      .then((r) => r.json())
+      .then((data: { category: string; slug: string; title: string }[]) => {
+        const titles = [...data.map((p) => p.title).filter(Boolean), "Other"];
+        if (titles.length > 1) setProducts(titles);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,9 +43,7 @@ export default function ContactPage() {
       <section className="section" style={{ background: "linear-gradient(135deg, #f0f7ff 0%, #e8f2ff 45%, #f8faff 100%)" }}>
         <div className="container-lh max-w-2xl text-center">
           <p className="section-label">Get in touch</p>
-          <h1 className="section-title mx-auto mb-4" style={{ fontFamily: "var(--font-display)" }}>
-            Contact Us
-          </h1>
+          <h1 className="section-title mx-auto mb-4" style={{ fontFamily: "var(--font-display)" }}>Contact Us</h1>
           <p className="section-subtitle mx-auto">
             Speak with Lending Hub&apos;s team for help with loans, insurance,
             eligibility checks, and application support.
@@ -52,7 +62,6 @@ export default function ContactPage() {
               <p className="text-sm font-bold mb-6" style={{ color: "var(--color-neutral-600)" }}>
                 LENDING HUB TECHNOLOGIES PRIVATE LIMITED
               </p>
-
               <div className="flex flex-col gap-6">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "var(--color-primary-light)" }}>
@@ -68,7 +77,6 @@ export default function ContactPage() {
                     </p>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "var(--color-primary-light)" }}>
                     <Phone size={18} style={{ color: "var(--color-primary)" }} />
@@ -79,7 +87,6 @@ export default function ContactPage() {
                     <a href="tel:+919885660222" className="block text-sm font-semibold hover:underline" style={{ color: "var(--color-secondary)" }}>+91 9885660222</a>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "var(--color-primary-light)" }}>
                     <Mail size={18} style={{ color: "var(--color-primary)" }} />
@@ -91,7 +98,6 @@ export default function ContactPage() {
                     </a>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#e6faf0" }}>
                     <MessageCircle size={18} style={{ color: "#0d7a45" }} />
@@ -101,14 +107,12 @@ export default function ContactPage() {
                     <a
                       href={`https://wa.me/919885660222?text=${encodeURIComponent("Hi! I need help from Lending Hub.")}`}
                       target="_blank" rel="noopener noreferrer"
-                      className="text-sm font-semibold hover:underline"
-                      style={{ color: "#0d7a45" }}
+                      className="text-sm font-semibold hover:underline" style={{ color: "#0d7a45" }}
                     >
                       Chat on WhatsApp
                     </a>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "var(--color-secondary-light)" }}>
                     <Clock size={18} style={{ color: "var(--color-secondary)" }} />
@@ -171,8 +175,7 @@ export default function ContactPage() {
                       <label className="flex items-start gap-2.5 cursor-pointer" htmlFor="contact-consent">
                         <input id="contact-consent" type="checkbox" className="mt-0.5 w-4 h-4 accent-blue-500" checked={form.consent} onChange={(e) => setForm({ ...form, consent: e.target.checked })} required />
                         <span className="text-xs leading-relaxed" style={{ color: "var(--color-neutral-500)" }}>
-                          I consent to Lending Hub Technologies Pvt. Ltd. contacting me regarding my
-                          query. *
+                          I consent to Lending Hub Technologies Pvt. Ltd. contacting me regarding my query. *
                         </span>
                       </label>
                       <button id="contact-submit" type="submit" className="btn btn-primary w-full" disabled={loading || !form.consent} style={{ minHeight: "50px" }}>

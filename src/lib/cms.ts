@@ -38,6 +38,10 @@ function navPath() {
   return path.join(process.cwd(), "public", "cms-data", "navigation.json");
 }
 
+function leadsPath() {
+  return path.join(process.cwd(), "data", "leads.jsonl");
+}
+
 /** Read product JSON — throws if slug not found */
 export function readProductData(category: string, slug: string): ProductData {
   const filePath = dataPath(category, slug);
@@ -52,7 +56,6 @@ export function writeProductData(
   data: ProductData
 ): void {
   const filePath = dataPath(category, slug);
-  // Ensure directory exists
   const dir = path.dirname(filePath);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
@@ -64,7 +67,6 @@ export function readNavigation(): NavConfig {
     const raw = fs.readFileSync(navPath(), "utf-8");
     return JSON.parse(raw) as NavConfig;
   } catch {
-    // Fallback defaults
     return {
       loans: [
         { href: "/loans/personal-loan", label: "Personal Loan" },
@@ -117,4 +119,30 @@ export function listAllProducts(): {
   }
 
   return result;
+}
+
+/** Append a lead to data/leads.jsonl (one JSON object per line) */
+export function appendLead(lead: Record<string, unknown>): void {
+  try {
+    const dir = path.join(process.cwd(), "data");
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.appendFileSync(leadsPath(), JSON.stringify(lead) + "\n", "utf-8");
+  } catch (err) {
+    console.error("[LEAD FILE SAVE ERROR]", err);
+  }
+}
+
+/** Read all leads from data/leads.jsonl */
+export function readLeads(): Record<string, unknown>[] {
+  try {
+    if (!fs.existsSync(leadsPath())) return [];
+    const raw = fs.readFileSync(leadsPath(), "utf-8");
+    return raw
+      .split("\n")
+      .filter((line) => line.trim())
+      .map((line) => JSON.parse(line) as Record<string, unknown>);
+  } catch (err) {
+    console.error("[LEAD FILE READ ERROR]", err);
+    return [];
+  }
 }

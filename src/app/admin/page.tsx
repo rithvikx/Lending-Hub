@@ -168,6 +168,9 @@ export default function AdminPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <Link href="/admin/leads" className="text-sm font-semibold flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors hover:bg-neutral-50" style={{ color: "var(--color-secondary)" }}>
+              📥 Leads
+            </Link>
             <Link href="/" target="_blank" className="text-sm font-medium" style={{ color: "var(--color-primary)" }}>
               View Site ↗
             </Link>

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ChevronRight, CheckCircle, Loader2 } from "lucide-react";
 
 type Step = 1 | 2 | 3 | 4;
 
-const products = [
+const DEFAULT_PRODUCTS = [
   "Personal Loan",
   "Business Loan",
   "Loan Against Property",
@@ -74,6 +74,7 @@ function meter(score: number): { label: string; color: string; pct: number } {
 }
 
 export default function EligibilityCheckerPage() {
+  const [products, setProducts] = useState(DEFAULT_PRODUCTS);
   const [step, setStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -84,6 +85,17 @@ export default function EligibilityCheckerPage() {
     cibil: "",
     product: "",
   });
+
+  // Fetch dynamic product list from CMS
+  useEffect(() => {
+    fetch("/api/cms/list")
+      .then((r) => r.json())
+      .then((data: { category: string; slug: string; title: string }[]) => {
+        const titles = data.map((p) => p.title).filter(Boolean);
+        if (titles.length > 0) setProducts(titles);
+      })
+      .catch(() => {});
+  }, []);
 
   const readiness = (() => {
     let score = 30;
@@ -103,13 +115,8 @@ export default function EligibilityCheckerPage() {
 
   const m = meter(readiness);
 
-  const handleNext = () => {
-    if (step < 4) setStep((s) => (s + 1) as Step);
-  };
-
-  const handleBack = () => {
-    if (step > 1) setStep((s) => (s - 1) as Step);
-  };
+  const handleNext = () => { if (step < 4) setStep((s) => (s + 1) as Step); };
+  const handleBack = () => { if (step > 1) setStep((s) => (s - 1) as Step); };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,20 +146,16 @@ export default function EligibilityCheckerPage() {
         <StepIndicator current={step} total={4} />
 
         <div className="card p-8 md:p-10">
-          {/* Step 1 */}
+          {/* Step 1 — Employment */}
           {step === 1 && (
             <div>
               <h2 className="text-xl font-bold mb-1" style={{ fontFamily: "var(--font-display)", color: "var(--color-secondary)" }}>
                 What best describes you?
               </h2>
-              <p className="text-sm mb-6" style={{ color: "var(--color-neutral-500)" }}>
-                Select your employment type.
-              </p>
+              <p className="text-sm mb-6" style={{ color: "var(--color-neutral-500)" }}>Select your employment type.</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {employmentTypes.map((t) => (
-                  <button
-                    key={t}
-                    id={`emp-${t.toLowerCase().replace(/\s+/g, '-')}`}
+                  <button key={t} id={`emp-${t.toLowerCase().replace(/\s+/g, '-')}`}
                     onClick={() => setForm({ ...form, employmentType: t })}
                     className="p-4 rounded-xl border-2 text-sm font-semibold transition-all"
                     style={{
@@ -165,63 +168,36 @@ export default function EligibilityCheckerPage() {
                   </button>
                 ))}
               </div>
-              <button
-                id="step1-next"
-                className="btn btn-primary w-full mt-6"
-                disabled={!form.employmentType}
-                onClick={handleNext}
-              >
+              <button id="step1-next" className="btn btn-primary w-full mt-6" disabled={!form.employmentType} onClick={handleNext}>
                 Continue <ChevronRight size={16} />
               </button>
             </div>
           )}
 
-          {/* Step 2 */}
+          {/* Step 2 — Income */}
           {step === 2 && (
             <div>
               <h2 className="text-xl font-bold mb-1" style={{ fontFamily: "var(--font-display)", color: "var(--color-secondary)" }}>
                 Tell us about your income
               </h2>
-              <p className="text-sm mb-6" style={{ color: "var(--color-neutral-500)" }}>
-                Monthly income, city, and age helps us assess eligibility.
-              </p>
+              <p className="text-sm mb-6" style={{ color: "var(--color-neutral-500)" }}>Monthly income, city, and age helps us assess eligibility.</p>
               <div className="flex flex-col gap-4">
                 <div>
                   <label className="label-lh" htmlFor="eligibility-income">Monthly Income (₹) *</label>
-                  <input
-                    id="eligibility-income"
-                    type="number"
-                    className="input-lh"
-                    placeholder="e.g. 50000"
-                    value={form.income}
-                    onChange={(e) => setForm({ ...form, income: e.target.value })}
-                    required
-                  />
+                  <input id="eligibility-income" type="number" className="input-lh" placeholder="e.g. 50000"
+                    value={form.income} onChange={(e) => setForm({ ...form, income: e.target.value })} required />
                 </div>
                 <div>
                   <label className="label-lh" htmlFor="eligibility-city">City *</label>
-                  <select
-                    id="eligibility-city"
-                    className="input-lh"
-                    value={form.city}
-                    onChange={(e) => setForm({ ...form, city: e.target.value })}
-                    required
-                  >
+                  <select id="eligibility-city" className="input-lh" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} required>
                     <option value="">Select your city</option>
                     {cities.map((c) => <option key={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="label-lh" htmlFor="eligibility-age">Age *</label>
-                  <input
-                    id="eligibility-age"
-                    type="number"
-                    className="input-lh"
-                    placeholder="e.g. 30"
-                    min={21} max={65}
-                    value={form.age}
-                    onChange={(e) => setForm({ ...form, age: e.target.value })}
-                  />
+                  <input id="eligibility-age" type="number" className="input-lh" placeholder="e.g. 30" min={21} max={65}
+                    value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} />
                 </div>
               </div>
               <div className="flex gap-3 mt-6">
@@ -233,41 +209,27 @@ export default function EligibilityCheckerPage() {
             </div>
           )}
 
-          {/* Step 3 */}
+          {/* Step 3 — Credit & product */}
           {step === 3 && (
             <form onSubmit={handleSubmit}>
               <h2 className="text-xl font-bold mb-1" style={{ fontFamily: "var(--font-display)", color: "var(--color-secondary)" }}>
                 Credit profile &amp; product
               </h2>
-              <p className="text-sm mb-6" style={{ color: "var(--color-neutral-500)" }}>
-                This helps calculate your eligibility readiness.
-              </p>
+              <p className="text-sm mb-6" style={{ color: "var(--color-neutral-500)" }}>This helps calculate your eligibility readiness.</p>
               <div className="flex flex-col gap-5">
                 <div>
                   <label className="label-lh">Your approximate CIBIL / credit score range</label>
                   <div className="flex flex-col gap-2">
                     {cibilRanges.map((c) => (
-                      <label
-                        key={c.value}
-                        className="flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all"
+                      <label key={c.value} className="flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all"
                         style={{
                           borderColor: form.cibil === c.value ? "var(--color-primary)" : "var(--color-neutral-200)",
                           backgroundColor: form.cibil === c.value ? "var(--color-primary-light)" : "#ffffff",
                         }}
                       >
-                        <input
-                          type="radio"
-                          name="cibil"
-                          value={c.value}
-                          checked={form.cibil === c.value}
-                          onChange={() => setForm({ ...form, cibil: c.value })}
-                          className="accent-blue-500"
-                          id={`cibil-${c.value}`}
-                        />
-                        <span
-                          className="text-sm font-medium"
-                          style={{ color: form.cibil === c.value ? "var(--color-primary)" : "var(--color-neutral-700)" }}
-                        >
+                        <input type="radio" name="cibil" value={c.value} checked={form.cibil === c.value}
+                          onChange={() => setForm({ ...form, cibil: c.value })} className="accent-blue-500" id={`cibil-${c.value}`} />
+                        <span className="text-sm font-medium" style={{ color: form.cibil === c.value ? "var(--color-primary)" : "var(--color-neutral-700)" }}>
                           {c.label}
                         </span>
                       </label>
@@ -276,12 +238,7 @@ export default function EligibilityCheckerPage() {
                 </div>
                 <div>
                   <label className="label-lh" htmlFor="eligibility-product">Product I&apos;m Interested In</label>
-                  <select
-                    id="eligibility-product"
-                    className="input-lh"
-                    value={form.product}
-                    onChange={(e) => setForm({ ...form, product: e.target.value })}
-                  >
+                  <select id="eligibility-product" className="input-lh" value={form.product} onChange={(e) => setForm({ ...form, product: e.target.value })}>
                     <option value="">Select product</option>
                     {products.map((p) => <option key={p}>{p}</option>)}
                   </select>
@@ -289,18 +246,11 @@ export default function EligibilityCheckerPage() {
               </div>
               <div className="flex gap-3 mt-6">
                 <button type="button" id="step3-back" className="btn btn-secondary flex-1" onClick={handleBack}>← Back</button>
-                <button
-                  id="step3-submit"
-                  type="submit"
-                  className="btn btn-primary flex-1"
-                  disabled={!form.cibil || loading}
-                >
+                <button id="step3-submit" type="submit" className="btn btn-primary flex-1" disabled={!form.cibil || loading}>
                   {loading ? <Loader2 size={16} className="animate-spin" /> : "Check My Readiness →"}
                 </button>
               </div>
-              <p className="compliance-text text-center mt-4">
-                Submission does not guarantee approval. For information only.
-              </p>
+              <p className="compliance-text text-center mt-4">Submission does not guarantee approval. For information only.</p>
             </form>
           )}
 
@@ -310,31 +260,17 @@ export default function EligibilityCheckerPage() {
               <h2 className="text-xl font-bold mb-1" style={{ fontFamily: "var(--font-display)", color: "var(--color-secondary)" }}>
                 Your Eligibility Readiness
               </h2>
-              <p className="text-sm mb-8" style={{ color: "var(--color-neutral-500)" }}>
-                Based on the details you provided.
-              </p>
-
-              {/* Meter */}
+              <p className="text-sm mb-8" style={{ color: "var(--color-neutral-500)" }}>Based on the details you provided.</p>
               <div className="flex flex-col items-center mb-8">
                 <div className="relative w-40 h-40 mb-4">
                   <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
                     <circle cx="60" cy="60" r="50" fill="none" stroke="var(--color-neutral-100)" strokeWidth="12" />
-                    <circle
-                      cx="60" cy="60" r="50" fill="none"
-                      stroke={m.color}
-                      strokeWidth="12"
-                      strokeDasharray={`${(m.pct / 100) * 314} 314`}
-                      strokeLinecap="round"
-                      className="transition-all duration-700"
-                    />
+                    <circle cx="60" cy="60" r="50" fill="none" stroke={m.color} strokeWidth="12"
+                      strokeDasharray={`${(m.pct / 100) * 314} 314`} strokeLinecap="round" className="transition-all duration-700" />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-3xl font-bold" style={{ fontFamily: "var(--font-display)", color: m.color }}>
-                      {readiness}%
-                    </span>
-                    <span className="text-xs font-semibold" style={{ color: "var(--color-neutral-500)" }}>
-                      {m.label}
-                    </span>
+                    <span className="text-3xl font-bold" style={{ fontFamily: "var(--font-display)", color: m.color }}>{readiness}%</span>
+                    <span className="text-xs font-semibold" style={{ color: "var(--color-neutral-500)" }}>{m.label}</span>
                   </div>
                 </div>
                 <p className="text-sm max-w-xs" style={{ color: "var(--color-neutral-600)" }}>
@@ -345,7 +281,6 @@ export default function EligibilityCheckerPage() {
                     : "Our advisors can help you understand how to improve eligibility and explore available options."}
                 </p>
               </div>
-
               <div className="flex flex-col gap-3">
                 <Link href="/apply" id="eligibility-result-apply" className="btn btn-primary btn-lg w-full">
                   View Matching Offers → Apply Now

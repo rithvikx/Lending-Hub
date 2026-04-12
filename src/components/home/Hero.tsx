@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Shield, Users, Clock, MessageCircle, ChevronRight } from "lucide-react";
 
-const products = [
+const DEFAULT_PRODUCTS = [
   "Personal Loan",
   "Business Loan",
   "Loan Against Property",
@@ -16,6 +16,7 @@ const products = [
 ];
 
 export default function Hero() {
+  const [products, setProducts] = useState(DEFAULT_PRODUCTS);
   const [form, setForm] = useState({
     name: "",
     mobile: "",
@@ -24,6 +25,17 @@ export default function Hero() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Fetch dynamic product list from CMS
+  useEffect(() => {
+    fetch("/api/cms/list")
+      .then((r) => r.json())
+      .then((data: { category: string; slug: string; title: string }[]) => {
+        const titles = data.map((p) => p.title).filter(Boolean);
+        if (titles.length > 0) setProducts(titles);
+      })
+      .catch(() => {}); // keep defaults on error
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +80,6 @@ export default function Hero() {
         <div className="grid lg:grid-cols-2 gap-12 items-center py-16 md:py-24">
           {/* Left — headline + trust row */}
           <div>
-            {/* Label */}
             <div className="inline-flex items-center gap-2 mb-5">
               <span
                 className="chip chip-blue"

@@ -10,20 +10,7 @@ import {
   AlertCircle,
   Users,
 } from "lucide-react";
-
-const loanLinks = [
-  { href: "/loans/personal-loan", label: "Personal Loan" },
-  { href: "/loans/business-loan", label: "Business Loan" },
-  { href: "/loans/loan-against-property", label: "Loan Against Property" },
-  { href: "/loans/vehicle-loan", label: "Vehicle Loan" },
-];
-
-const insuranceLinks = [
-  { href: "/insurance/car-insurance", label: "Car Insurance" },
-  { href: "/insurance/bike-insurance", label: "Bike Insurance" },
-  { href: "/insurance/health-insurance", label: "Health Insurance" },
-  { href: "/insurance/life-insurance", label: "Life Insurance" },
-];
+import { readNavigation } from "@/lib/cms";
 
 const companyLinks = [
   { href: "/about", label: "About Us" },
@@ -42,6 +29,11 @@ const legalLinks = [
 ];
 
 export default function Footer() {
+  // Dynamic nav links — reads from cms-data/navigation.json
+  const nav = readNavigation();
+  const loanLinks = nav.loans;
+  const insuranceLinks = nav.insurance;
+
   return (
     <footer aria-label="Site footer">
       {/* Pre-footer CTA strip */}
@@ -92,7 +84,7 @@ export default function Footer() {
                 />
               </Link>
               <p className="text-white/60 text-sm leading-relaxed mb-6 max-w-xs">
-                Lending Hub simplifies loans and insurance for salaried professionals, 
+                Lending Hub simplifies loans and insurance for salaried professionals,
                 self-employed users, and first-time borrowers across India.
               </p>
               <div className="flex flex-col gap-3">
@@ -116,7 +108,7 @@ export default function Footer() {
                   connect.lendinghub@gmail.com
                 </a>
                 <a
-                  href={`https://wa.me/919885660222`}
+                  href="https://wa.me/919885660222"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-white/70 hover:text-white text-xs font-medium transition-colors"
@@ -127,7 +119,7 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Loans */}
+            {/* Loans & Insurance — dynamic from navigation.json */}
             <div>
               <h3 className="text-white text-sm font-bold mb-4 uppercase tracking-wider">Loans</h3>
               <ul className="flex flex-col gap-2.5">
