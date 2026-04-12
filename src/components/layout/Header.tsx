@@ -11,24 +11,15 @@ import {
   Mail,
   MessageCircle,
   Calculator,
-  CheckCircle,
 } from "lucide-react";
+import type { NavLink } from "@/lib/cms";
 
-const loanLinks = [
-  { href: "/loans/personal-loan", label: "Personal Loan" },
-  { href: "/loans/business-loan", label: "Business Loan" },
-  { href: "/loans/loan-against-property", label: "Loan Against Property" },
-  { href: "/loans/vehicle-loan", label: "Vehicle Loan" },
-];
+interface HeaderProps {
+  loanLinks: NavLink[];
+  insuranceLinks: NavLink[];
+}
 
-const insuranceLinks = [
-  { href: "/insurance/car-insurance", label: "Car Insurance" },
-  { href: "/insurance/bike-insurance", label: "Bike Insurance" },
-  { href: "/insurance/health-insurance", label: "Health Insurance" },
-  { href: "/insurance/life-insurance", label: "Life Insurance" },
-];
-
-export default function Header() {
+export default function Header({ loanLinks, insuranceLinks }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loansOpen, setLoansOpen] = useState(false);
@@ -40,9 +31,8 @@ export default function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close mobile menu on resize
   useEffect(() => {
-    const onResize = () => { if (window.innerWidth >= 1024) setMobileOpen(false); };
+    const onResize = () => { if (window.innerWidth >= 1280) setMobileOpen(false); };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
@@ -50,7 +40,7 @@ export default function Header() {
   return (
     <>
       {/* Top bar — desktop only */}
-      <div className="hidden lg:block bg-secondary" style={{ backgroundColor: "var(--color-secondary)" }}>
+      <div className="hidden xl:block" style={{ backgroundColor: "var(--color-secondary)" }}>
         <div className="container-lh flex items-center justify-between py-2">
           <p className="text-white/70 text-xs">
             LENDING HUB TECHNOLOGIES PRIVATE LIMITED — Hyderabad, Telangana
@@ -88,8 +78,11 @@ export default function Header() {
           borderBottom: scrolled ? "none" : "1px solid var(--color-neutral-100)",
         }}
       >
-        <div className="container-lh flex items-center gap-6 py-3.5">
-          <Link href="/" className="flex-shrink-0 flex items-center" aria-label="Lending Hub Home">
+        {/* Three-column grid: logo | centered-nav | CTAs */}
+        <div className="container-lh py-3.5 xl:grid xl:grid-cols-[auto_1fr_auto] xl:items-center flex items-center">
+
+          {/* Logo */}
+          <Link href="/" className="flex-shrink-0 flex items-center z-10" aria-label="Lending Hub Home">
             <Image
               src="/logo/logo.svg"
               alt="Lending Hub"
@@ -100,8 +93,9 @@ export default function Header() {
             />
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-1 flex-1 ml-4" aria-label="Main navigation">
+          {/* Desktop Nav — centered in the middle column */}
+          <nav className="hidden xl:flex items-center justify-center gap-1" aria-label="Main navigation">
+
             {/* Loans dropdown */}
             <div
               className="relative"
@@ -110,7 +104,7 @@ export default function Header() {
             >
               <button
                 id="nav-loans"
-                className="flex items-center gap-1 px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-neutral-50"
+                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-neutral-50 whitespace-nowrap"
                 style={{ color: loansOpen ? "var(--color-primary)" : "var(--color-neutral-700)" }}
                 aria-expanded={loansOpen}
                 aria-haspopup="true"
@@ -124,7 +118,7 @@ export default function Header() {
               </button>
               {loansOpen && (
                 <div
-                  className="absolute top-full left-0 mt-1 w-56 rounded-xl shadow-lg border py-2"
+                  className="absolute top-full left-0 mt-1 w-60 rounded-xl shadow-lg border py-2"
                   style={{
                     backgroundColor: "#ffffff",
                     borderColor: "var(--color-neutral-200)",
@@ -155,7 +149,7 @@ export default function Header() {
             >
               <button
                 id="nav-insurance"
-                className="flex items-center gap-1 px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-neutral-50"
+                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-neutral-50 whitespace-nowrap"
                 style={{ color: insuranceOpen ? "var(--color-primary)" : "var(--color-neutral-700)" }}
                 aria-expanded={insuranceOpen}
                 aria-haspopup="true"
@@ -169,7 +163,7 @@ export default function Header() {
               </button>
               {insuranceOpen && (
                 <div
-                  className="absolute top-full left-0 mt-1 w-56 rounded-xl shadow-lg border py-2"
+                  className="absolute top-full left-0 mt-1 w-60 rounded-xl shadow-lg border py-2"
                   style={{
                     backgroundColor: "#ffffff",
                     borderColor: "var(--color-neutral-200)",
@@ -195,25 +189,16 @@ export default function Header() {
             <Link
               href="/emi-calculator"
               id="nav-emi"
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-neutral-50"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-neutral-50 whitespace-nowrap"
               style={{ color: "var(--color-neutral-700)" }}
             >
               <Calculator size={14} /> EMI Calculator
             </Link>
 
             <Link
-              href="/eligibility-checker"
-              id="nav-eligibility"
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-neutral-50"
-              style={{ color: "var(--color-neutral-700)" }}
-            >
-              <CheckCircle size={14} /> Eligibility
-            </Link>
-
-            <Link
               href="/about"
               id="nav-about"
-              className="px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-neutral-50"
+              className="px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-neutral-50 whitespace-nowrap"
               style={{ color: "var(--color-neutral-700)" }}
             >
               About
@@ -222,37 +207,31 @@ export default function Header() {
             <Link
               href="/contact"
               id="nav-contact"
-              className="px-3.5 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-neutral-50"
+              className="px-3 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-neutral-50 whitespace-nowrap"
               style={{ color: "var(--color-neutral-700)" }}
             >
               Contact
             </Link>
           </nav>
 
-          {/* Desktop CTAs */}
-          <div className="hidden lg:flex items-center gap-2.5 ml-auto">
+          {/* Desktop CTAs — right column */}
+          <div className="hidden xl:flex items-center gap-2 justify-end flex-shrink-0">
             <a
               href={`https://wa.me/919885660222?text=${encodeURIComponent("Hi! I'd like to enquire about loans / insurance from Lending Hub.")}`}
               target="_blank"
               rel="noopener noreferrer"
               id="header-whatsapp"
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 whitespace-nowrap"
               style={{ backgroundColor: "#25d366" }}
               aria-label="Chat on WhatsApp"
             >
               <MessageCircle size={16} /> WhatsApp
             </a>
             <Link
-              href="/eligibility-checker"
-              id="header-cta-eligibility"
-              className="btn btn-secondary text-sm"
-            >
-              Check Eligibility
-            </Link>
-            <Link
               href="/apply"
               id="header-cta-apply"
-              className="btn btn-primary text-sm"
+              className="btn btn-primary text-sm whitespace-nowrap"
+              style={{ padding: "0.5rem 1.25rem" }}
             >
               Apply Now
             </Link>
@@ -261,7 +240,7 @@ export default function Header() {
           {/* Mobile hamburger */}
           <button
             id="mobile-menu-toggle"
-            className="lg:hidden ml-auto p-2 rounded-lg"
+            className="xl:hidden ml-auto p-2 rounded-lg"
             style={{ color: "var(--color-secondary)" }}
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
@@ -274,7 +253,7 @@ export default function Header() {
         {/* Mobile drawer */}
         {mobileOpen && (
           <div
-            className="lg:hidden border-t"
+            className="xl:hidden border-t"
             style={{
               backgroundColor: "#ffffff",
               borderColor: "var(--color-neutral-100)",
@@ -342,7 +321,6 @@ export default function Header() {
               )}
 
               <Link href="/emi-calculator" className="px-3 py-2.5 rounded-lg text-sm font-semibold" style={{ color: "var(--color-secondary)" }} onClick={() => setMobileOpen(false)}>EMI Calculator</Link>
-              <Link href="/eligibility-checker" className="px-3 py-2.5 rounded-lg text-sm font-semibold" style={{ color: "var(--color-secondary)" }} onClick={() => setMobileOpen(false)}>Eligibility Checker</Link>
               <Link href="/about" className="px-3 py-2.5 rounded-lg text-sm font-semibold" style={{ color: "var(--color-secondary)" }} onClick={() => setMobileOpen(false)}>About Us</Link>
               <Link href="/contact" className="px-3 py-2.5 rounded-lg text-sm font-semibold" style={{ color: "var(--color-secondary)" }} onClick={() => setMobileOpen(false)}>Contact</Link>
 

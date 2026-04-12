@@ -1,0 +1,38 @@
+{
+  "badge": "Higher Limit",
+  "title": "Loan Against Property",
+  "tagline": "Unlock the value of your property for bigger financial goals.",
+  "description": "A Loan Against Property (LAP) lets you leverage your residential or commercial property to access larger loan amounts at lower interest rates compared to unsecured loans. Ideal for funding business expansion, education, medical needs, or debt consolidation.",
+  "ctaLabel": "Apply Now",
+  "ctaHref": "/apply",
+  "features": [
+    "Loan amounts up to ₹5 crore or 60–70% of property value*",
+    "Lower interest rates vs. personal loans",
+    "Long tenure: up to 15 years",
+    "Property can continue to be used (no need to vacate)",
+    "Residential and commercial properties accepted",
+    "Part-disbursement available for construction loans",
+    "Overdraft facility option from select lenders",
+    "Tax benefit applicable under certain usage conditions"
+  ],
+  "eligibility": [
+    "Age: 21 – 60 years (salaried) / up to 65 years (self-employed)",
+    "Property must be legally clear with valid title and registration",
+    "Minimum income: ₹25,000/month (salaried) / ₹3 lakh p.a. (self-employed)",
+    "CIBIL score: 650 and above strongly recommended",
+    "Property should not be under dispute or litigation"
+  ],
+  "documents": [
+    "PAN Card + Aadhaar",
+    "Income proof (salary slips / ITR)",
+    "Property title deed / chain documents",
+    "Encumbrance certificate",
+    "Approved building plan (if applicable)",
+    "Last 12-month bank statements"
+  ],
+  "relatedProducts": [
+    { "label": "Personal Loan", "href": "/loans/personal-loan" },
+    { "label": "Business Loan", "href": "/loans/business-loan" },
+    { "label": "EMI Calculator", "href": "/emi-calculator" }
+  ]
+}

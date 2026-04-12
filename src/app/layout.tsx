@@ -5,6 +5,9 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import MobileBottomBar from "@/components/layout/MobileBottomBar";
 import WhatsAppButton from "@/components/layout/WhatsAppButton";
+import { readNavigation } from "@/lib/cms";
+
+export const dynamic = "force-dynamic";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -50,6 +53,8 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const nav = readNavigation();
+
   return (
     <html
       lang="en"
@@ -63,7 +68,7 @@ export default function RootLayout({
         className="min-h-full flex flex-col antialiased"
         style={{ fontFamily: "var(--font-inter, Inter, sans-serif)" }}
       >
-        <Header />
+        <Header loanLinks={nav.loans} insuranceLinks={nav.insurance} />
         <main className="flex-1">{children}</main>
         <Footer />
         <WhatsAppButton />

@@ -1,0 +1,35 @@
+{
+  "badge": "Affordable",
+  "title": "Bike Insurance",
+  "tagline": "Affordable protection for daily rides and long routes.",
+  "description": "Two-wheeler insurance is legally mandatory for all registered bikes and scooters in India. Lending Hub connects you with partner insurers to get you the best rate for third-party liability or comprehensive cover with a quick, paperless process.",
+  "ctaLabel": "Get Quote",
+  "ctaHref": "/apply",
+  "features": [
+    "Third-party and comprehensive two-wheeler plans",
+    "Own damage protection for your bike/scooter",
+    "Zero depreciation add-on",
+    "Engine protection cover",
+    "Roadside assistance",
+    "Overnight accommodation cover for breakdowns",
+    "Personal accident cover for owner-driver",
+    "No-claim bonus transfer from previous policy"
+  ],
+  "eligibility": [
+    "Valid vehicle RC for the two-wheeler",
+    "Previous insurance policy copy (for renewals)",
+    "Owner driving licence",
+    "Bike should not be under court case / seized"
+  ],
+  "documents": [
+    "Vehicle RC copy",
+    "Previous policy copy (renewal)",
+    "PAN Card + Aadhaar",
+    "Driving Licence"
+  ],
+  "relatedProducts": [
+    { "label": "Car Insurance", "href": "/insurance/car-insurance" },
+    { "label": "Health Insurance", "href": "/insurance/health-insurance" },
+    { "label": "Vehicle Loan", "href": "/loans/vehicle-loan" }
+  ]
+}
