@@ -27,6 +27,7 @@ export interface NavLink {
 export interface NavConfig {
   loans: NavLink[];
   insurance: NavLink[];
+  cards?: NavLink[];
 }
 
 /** Resolve path inside /public/cms-data */
@@ -80,12 +81,18 @@ export function readNavigation(): NavConfig {
         { href: "/insurance/health-insurance", label: "Health Insurance" },
         { href: "/insurance/life-insurance", label: "Life Insurance" },
       ],
+      cards: [
+        { href: "/cards/credit-card", label: "Credit Card" },
+        { href: "/cards/debit-card", label: "Debit Card" },
+      ],
     };
   }
 }
 
 /** Write navigation config */
 export function writeNavigation(data: NavConfig): void {
+  const dir = path.dirname(navPath());
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(navPath(), JSON.stringify(data, null, 2), "utf-8");
 }
 

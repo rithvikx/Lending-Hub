@@ -1,14 +1,52 @@
 {
   "loans": [
-    { "href": "/loans/personal-loan", "label": "Personal Loan" },
-    { "href": "/loans/business-loan", "label": "Business Loan" },
-    { "href": "/loans/loan-against-property", "label": "Loan Against Property" },
-    { "href": "/loans/vehicle-loan", "label": "Vehicle Loan" }
+    {
+      "href": "/loans/personal-loan",
+      "label": "Personal Loan"
+    },
+    {
+      "href": "/loans/business-loan",
+      "label": "Business Loan"
+    },
+    {
+      "href": "/loans/loan-against-property",
+      "label": "Loan Against Property"
+    },
+    {
+      "href": "/loans/vehicle-loan",
+      "label": "Vehicle Loan"
+    },
+    {
+      "href": "/loans/gold-loan",
+      "label": "\tGold Loan"
+    }
   ],
   "insurance": [
-    { "href": "/insurance/car-insurance", "label": "Car Insurance" },
-    { "href": "/insurance/bike-insurance", "label": "Bike Insurance" },
-    { "href": "/insurance/health-insurance", "label": "Health Insurance" },
-    { "href": "/insurance/life-insurance", "label": "Life Insurance" }
+    {
+      "href": "/insurance/car-insurance",
+      "label": "Car Insurance"
+    },
+    {
+      "href": "/insurance/bike-insurance",
+      "label": "Bike Insurance"
+    },
+    {
+      "href": "/insurance/health-insurance",
+      "label": "Health Insurance"
+    },
+    {
+      "href": "/insurance/life-insurance",
+      "label": "Life Insurance"
+    }
+  ],
+  "cards": [
+    {
+      "href": "/cards/credit-card",
+      "label": "Credit Card"
+    },
+    {
+      "href": "/cards/debit-card",
+      "label": "Debit Card"
+    }
   ]
 }

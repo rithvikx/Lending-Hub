@@ -68,7 +68,7 @@ export default function RootLayout({
         className="min-h-full flex flex-col antialiased"
         style={{ fontFamily: "var(--font-inter, Inter, sans-serif)" }}
       >
-        <Header loanLinks={nav.loans} insuranceLinks={nav.insurance} />
+        <Header loanLinks={nav.loans} insuranceLinks={nav.insurance} cardLinks={nav.cards ?? []} />
         <main className="flex-1">{children}</main>
         <Footer />
         <WhatsAppButton />
