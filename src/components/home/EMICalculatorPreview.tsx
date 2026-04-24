@@ -95,16 +95,16 @@ export default function EMICalculatorPreview() {
                   id="emi-amount"
                   type="range"
                   min={50000}
-                  max={10000000}
+                  max={5000000}
                   step={50000}
                   value={amount}
                   onChange={(e) => setAmount(Number(e.target.value))}
                   style={{
-                    background: `linear-gradient(to right, var(--color-primary) ${pct(amount, 50000, 10000000)}%, var(--color-neutral-200) ${pct(amount, 50000, 10000000)}%)`,
+                    background: `linear-gradient(to right, var(--color-primary) ${pct(amount, 50000, 5000000)}%, var(--color-neutral-200) ${pct(amount, 50000, 5000000)}%)`,
                   }}
                 />
                 <div className="flex justify-between text-xs mt-1" style={{ color: "var(--color-neutral-400)" }}>
-                  <span>₹50K</span><span>₹1Cr</span>
+                  <span>₹50K</span><span>₹50L</span>
                 </div>
               </div>
 
