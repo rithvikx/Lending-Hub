@@ -102,13 +102,13 @@ export default function EMICalculatorPage() {
                 </div>
                 <input
                   id="calc-amount"
-                  type="range" min={50000} max={10000000} step={50000}
+                  type="range" min={50000} max={5000000} step={50000}
                   value={amount}
                   onChange={(e) => setAmount(Number(e.target.value))}
-                  style={{ background: `linear-gradient(to right, var(--color-primary) ${pct(amount, 50000, 10000000)}%, var(--color-neutral-200) ${pct(amount, 50000, 10000000)}%)` }}
+                  style={{ background: `linear-gradient(to right, var(--color-primary) ${pct(amount, 50000, 5000000)}%, var(--color-neutral-200) ${pct(amount, 50000, 5000000)}%)` }}
                 />
                 <div className="flex justify-between text-xs mt-1" style={{ color: "var(--color-neutral-400)" }}>
-                  <span>₹50,000</span><span>₹1,00,00,000</span>
+                  <span>₹50,000</span><span>₹50,00,000</span>
                 </div>
               </div>
 
@@ -161,8 +161,8 @@ export default function EMICalculatorPage() {
                     type="number"
                     className="input-lh"
                     value={amount}
-                    min={50000} max={10000000}
-                    onChange={(e) => setAmount(Math.max(50000, Math.min(10000000, Number(e.target.value))))}
+                    min={50000} max={5000000}
+                    onChange={(e) => setAmount(Math.max(50000, Math.min(5000000, Number(e.target.value))))}
                   />
                 </div>
                 <div>

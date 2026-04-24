@@ -11,7 +11,6 @@ import {
   Phone,
   Mail,
   MessageCircle,
-  Calculator,
 } from "lucide-react";
 import type { NavLink } from "@/lib/cms";
 
@@ -292,7 +291,7 @@ export default function Header({ loanLinks, insuranceLinks, cardLinks }: HeaderP
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap hover:bg-blue-50"
               style={linkStyle("/emi-calculator")}
             >
-              <Calculator size={14} /> EMI Calculator
+              EMI Calculator
             </Link>
 
             <Link
