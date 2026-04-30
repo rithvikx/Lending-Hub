@@ -5,19 +5,16 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
-  Shield,
   Loader2,
   Phone,
   Mail,
-  MapPin,
   MessageCircle,
-  Clock,
   ChevronDown,
   ChevronUp,
-  Trash2,
 } from "lucide-react";
 
 const SESSION_KEY = "lh_admin_auth";
+const TOKEN_KEY = "lh_admin_token";
 
 interface Lead {
   name?: string;
@@ -36,7 +33,10 @@ interface Lead {
   [key: string]: unknown;
 }
 
-const PRIORITY_KEYS = ["timestamp", "name", "mobile", "email", "product", "source", "income", "city", "employmentType", "cibil", "readiness", "message"];
+const PRIORITY_KEYS = [
+  "timestamp", "name", "mobile", "email", "product", "source",
+  "income", "city", "employmentType", "cibil", "readiness", "message",
+];
 
 export default function AdminLeadsPage() {
   const router = useRouter();
@@ -52,16 +52,24 @@ export default function AdminLeadsPage() {
       return;
     }
     loadLeads();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   async function loadLeads() {
     setLoading(true);
     setError("");
-    const pw = sessionStorage.getItem("lh_admin_pw") ?? "";
+    const token = sessionStorage.getItem(TOKEN_KEY) ?? "";
     try {
       const res = await fetch("/api/cms/leads", {
-        headers: { "x-admin-password": pw },
+        headers: { Authorization: `Bearer ${token}` },
       });
+      if (res.status === 401) {
+        // Token expired — redirect to login
+        sessionStorage.removeItem(SESSION_KEY);
+        sessionStorage.removeItem(TOKEN_KEY);
+        router.replace("/admin");
+        return;
+      }
       if (!res.ok) throw new Error("Failed to load leads");
       const data = await res.json() as Lead[];
       setLeads(data);
@@ -105,7 +113,6 @@ export default function AdminLeadsPage() {
 
   return (
     <div className="min-h-screen" style={{ background: "var(--color-neutral-50)" }}>
-      {/* Top bar */}
       <div className="sticky top-0 z-40 border-b" style={{ background: "#fff", borderColor: "var(--color-neutral-200)", boxShadow: "0 1px 0 0 rgba(0,0,0,0.06)" }}>
         <div className="container-lh flex items-center justify-between py-3.5 gap-4">
           <div className="flex items-center gap-3">
@@ -122,7 +129,6 @@ export default function AdminLeadsPage() {
       </div>
 
       <div className="container-lh py-10">
-        {/* Header */}
         <div className="flex items-start justify-between gap-4 flex-wrap mb-8">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -139,7 +145,6 @@ export default function AdminLeadsPage() {
             </p>
           </div>
 
-          {/* Search */}
           <input
             type="text"
             className="input-lh max-w-xs"
@@ -175,13 +180,11 @@ export default function AdminLeadsPage() {
           <div className="flex flex-col gap-3">
             {filtered.map((lead, i) => (
               <div key={i} className="card overflow-hidden">
-                {/* Summary row */}
                 <button
                   className="w-full text-left p-5 flex items-center gap-4"
                   onClick={() => setExpanded(expanded === i ? null : i)}
                 >
-                  {/* Avatar */}
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm text-white"
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold text-sm text-white"
                     style={{ background: "linear-gradient(135deg, #0090FF, #00297A)" }}>
                     {lead.name ? lead.name.charAt(0).toUpperCase() : "?"}
                   </div>
@@ -209,7 +212,7 @@ export default function AdminLeadsPage() {
                     </div>
                   </div>
 
-                  <div className="text-right flex-shrink-0">
+                  <div className="text-right shrink-0">
                     <p className="text-xs" style={{ color: "var(--color-neutral-400)" }}>{formatDate(lead.timestamp)}</p>
                     <div className="flex items-center justify-end gap-1 mt-1" style={{ color: "var(--color-neutral-400)" }}>
                       {expanded === i ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -217,7 +220,6 @@ export default function AdminLeadsPage() {
                   </div>
                 </button>
 
-                {/* Expanded details */}
                 {expanded === i && (
                   <div className="border-t px-5 pb-5 pt-4" style={{ borderColor: "var(--color-neutral-100)", backgroundColor: "var(--color-neutral-50)" }}>
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-3">
@@ -231,7 +233,6 @@ export default function AdminLeadsPage() {
                       ))}
                     </div>
 
-                    {/* Quick actions */}
                     <div className="flex gap-2 mt-4 pt-4 flex-wrap" style={{ borderTop: "1px solid var(--color-neutral-200)" }}>
                       {lead.mobile && (
                         <a href={`tel:+91${lead.mobile}`} className="btn btn-secondary text-xs" style={{ padding: "0.4rem 0.875rem" }}>
@@ -260,7 +261,7 @@ export default function AdminLeadsPage() {
         )}
 
         <p className="compliance-text text-center mt-10">
-          Lead data is stored server-side in <code>data/leads.jsonl</code>. Handle with care — contains personal information.
+          Lead data is stored server-side. Handle with care — contains personal information.
         </p>
       </div>
     </div>

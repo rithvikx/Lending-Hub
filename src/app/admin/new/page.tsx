@@ -34,6 +34,7 @@ const EMPTY: {
 };
 
 const SESSION_KEY = "lh_admin_auth";
+const TOKEN_KEY = "lh_admin_token";
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -45,7 +46,6 @@ export default function NewProductPage() {
   const [error, setError] = useState("");
   const [slugError, setSlugError] = useState("");
 
-  // Auth guard
   useEffect(() => {
     if (sessionStorage.getItem(SESSION_KEY) !== "true") {
       router.replace("/admin");
@@ -72,39 +72,46 @@ export default function NewProductPage() {
     setError("");
     setSaving(true);
 
-    const pw = sessionStorage.getItem("lh_admin_pw") ?? "";
+    const token = sessionStorage.getItem(TOKEN_KEY) ?? "";
 
     try {
-      // 1. Create the product JSON
       const productRes = await fetch("/api/cms", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-password": pw },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ category, slug, data }),
       });
+
+      if (productRes.status === 401) {
+        sessionStorage.removeItem(SESSION_KEY);
+        sessionStorage.removeItem(TOKEN_KEY);
+        router.replace("/admin");
+        return;
+      }
       if (!productRes.ok) {
         const err = await productRes.json();
         throw new Error(err.error ?? "Failed to create product");
       }
 
-      // 2. Optionally add to nav
       if (addToNav) {
         const navRes = await fetch("/api/cms/nav");
         if (navRes.ok) {
           const nav = await navRes.json() as { loans: {href:string;label:string}[]; insurance: {href:string;label:string}[] };
           const newLink = { href: `/${category}/${slug}`, label: data.title };
-          const updated = {
-            ...nav,
-            [category]: [...nav[category], newLink],
-          };
+          const updated = { ...nav, [category]: [...nav[category], newLink] };
           await fetch("/api/cms/nav", {
             method: "POST",
-            headers: { "Content-Type": "application/json", "x-admin-password": pw },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify(updated),
           });
         }
       }
 
-      // 3. Redirect to edit page
       router.push(`/admin/edit/${category}/${slug}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create product.");
@@ -112,7 +119,6 @@ export default function NewProductPage() {
     }
   }
 
-  // Array helpers
   type ArrField = "features" | "eligibility" | "documents";
   function updateArr(field: ArrField, i: number, v: string) {
     const arr = [...data[field]]; arr[i] = v; setData({ ...data, [field]: arr });
@@ -125,7 +131,6 @@ export default function NewProductPage() {
 
   return (
     <div className="min-h-screen" style={{ background: "var(--color-neutral-50)" }}>
-      {/* Top bar */}
       <div className="sticky top-0 z-40 border-b" style={{ background: "#fff", borderColor: "var(--color-neutral-200)", boxShadow: "0 1px 0 0 rgba(0,0,0,0.06)" }}>
         <div className="container-lh flex items-center justify-between py-3.5 gap-4">
           <div className="flex items-center gap-3">
@@ -135,12 +140,7 @@ export default function NewProductPage() {
             <span style={{ color: "var(--color-neutral-300)" }}>/</span>
             <span className="text-sm font-semibold" style={{ color: "var(--color-neutral-600)" }}>New Product</span>
           </div>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="btn btn-primary text-sm flex items-center gap-2"
-            style={{ padding: "0.5rem 1.25rem" }}
-          >
+          <button onClick={handleSave} disabled={saving} className="btn btn-primary text-sm flex items-center gap-2" style={{ padding: "0.5rem 1.25rem" }}>
             {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
             {saving ? "Creating…" : "Create Product"}
           </button>
@@ -164,52 +164,34 @@ export default function NewProductPage() {
         </div>
 
         <div className="flex flex-col gap-6">
-          {/* Category & Slug */}
           <div className="card p-6">
             <h2 className="text-base font-bold mb-5" style={{ color: "var(--color-secondary)" }}>Product Identity</h2>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="label-lh" htmlFor="new-category">Category</label>
-                <select
-                  id="new-category"
-                  className="input-lh"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value as "loans" | "insurance")}
-                >
+                <select id="new-category" className="input-lh" value={category}
+                  onChange={(e) => setCategory(e.target.value as "loans" | "insurance")}>
                   <option value="loans">Loans</option>
                   <option value="insurance">Insurance</option>
                 </select>
               </div>
               <div>
                 <label className="label-lh" htmlFor="new-slug">URL Slug</label>
-                <input
-                  id="new-slug"
-                  type="text"
-                  className="input-lh"
-                  placeholder="e.g. home-loan"
-                  value={slug}
-                  onChange={(e) => validateSlug(e.target.value)}
-                />
+                <input id="new-slug" type="text" className="input-lh" placeholder="e.g. home-loan"
+                  value={slug} onChange={(e) => validateSlug(e.target.value)} />
                 {slugError && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>{slugError}</p>}
                 {slug && !slugError && (
-                  <p className="text-xs mt-1" style={{ color: "var(--color-neutral-400)" }}>
-                    URL: /{category}/{slug}
-                  </p>
+                  <p className="text-xs mt-1" style={{ color: "var(--color-neutral-400)" }}>URL: /{category}/{slug}</p>
                 )}
               </div>
             </div>
 
-            {/* Nav toggle */}
             <label className="flex items-center gap-3 mt-4 cursor-pointer">
-              <div
-                onClick={() => setAddToNav(!addToNav)}
-                className="w-10 h-6 rounded-full relative transition-colors cursor-pointer flex-shrink-0"
-                style={{ backgroundColor: addToNav ? "var(--color-primary)" : "var(--color-neutral-300)" }}
-              >
-                <div
-                  className="w-4 h-4 bg-white rounded-full absolute top-1 transition-all"
-                  style={{ left: addToNav ? "calc(100% - 1.25rem)" : "0.25rem" }}
-                />
+              <div onClick={() => setAddToNav(!addToNav)}
+                className="w-10 h-6 rounded-full relative transition-colors cursor-pointer shrink-0"
+                style={{ backgroundColor: addToNav ? "var(--color-primary)" : "var(--color-neutral-300)" }}>
+                <div className="w-4 h-4 bg-white rounded-full absolute top-1 transition-all"
+                  style={{ left: addToNav ? "calc(100% - 1.25rem)" : "0.25rem" }} />
               </div>
               <div>
                 <p className="text-sm font-semibold" style={{ color: "var(--color-neutral-700)" }}>Add to Navigation Menu</p>
@@ -218,60 +200,55 @@ export default function NewProductPage() {
             </label>
           </div>
 
-          {/* Basic Info */}
           <div className="card p-6">
             <h2 className="text-base font-bold mb-5" style={{ color: "var(--color-secondary)" }}>Basic Information</h2>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="label-lh" htmlFor="new-badge">Badge Text</label>
-                <input id="new-badge" type="text" className="input-lh" placeholder="e.g. Fast Approval" value={data.badge} onChange={(e) => setData({ ...data, badge: e.target.value })} />
+                <input id="new-badge" type="text" className="input-lh" placeholder="e.g. Fast Approval"
+                  value={data.badge} onChange={(e) => setData({ ...data, badge: e.target.value })} />
               </div>
               <div>
                 <label className="label-lh" htmlFor="new-title">Page Title *</label>
-                <input
-                  id="new-title"
-                  type="text"
-                  className="input-lh"
-                  placeholder="e.g. Home Loan"
-                  value={data.title}
+                <input id="new-title" type="text" className="input-lh" placeholder="e.g. Home Loan" value={data.title}
                   onChange={(e) => {
                     setData({ ...data, title: e.target.value });
                     if (!slug) setSlug(autoSlug(e.target.value));
-                  }}
-                />
+                  }} />
               </div>
               <div className="sm:col-span-2">
                 <label className="label-lh" htmlFor="new-tagline">Tagline</label>
-                <input id="new-tagline" type="text" className="input-lh" placeholder="Short catchy line under the title" value={data.tagline} onChange={(e) => setData({ ...data, tagline: e.target.value })} />
+                <input id="new-tagline" type="text" className="input-lh" placeholder="Short catchy line under the title"
+                  value={data.tagline} onChange={(e) => setData({ ...data, tagline: e.target.value })} />
               </div>
               <div className="sm:col-span-2">
                 <label className="label-lh" htmlFor="new-description">Description</label>
-                <textarea id="new-description" className="input-lh" style={{ minHeight: "100px", resize: "vertical" }} placeholder="Full paragraph shown on the product page" value={data.description} onChange={(e) => setData({ ...data, description: e.target.value })} />
+                <textarea id="new-description" className="input-lh" style={{ minHeight: "100px", resize: "vertical" }}
+                  placeholder="Full paragraph shown on the product page"
+                  value={data.description} onChange={(e) => setData({ ...data, description: e.target.value })} />
               </div>
               <div>
                 <label className="label-lh" htmlFor="new-cta-label">CTA Button Text</label>
-                <input id="new-cta-label" type="text" className="input-lh" value={data.ctaLabel} onChange={(e) => setData({ ...data, ctaLabel: e.target.value })} />
+                <input id="new-cta-label" type="text" className="input-lh" value={data.ctaLabel}
+                  onChange={(e) => setData({ ...data, ctaLabel: e.target.value })} />
               </div>
               <div>
                 <label className="label-lh" htmlFor="new-cta-href">CTA Button Link</label>
-                <input id="new-cta-href" type="text" className="input-lh" value={data.ctaHref} onChange={(e) => setData({ ...data, ctaHref: e.target.value })} />
+                <input id="new-cta-href" type="text" className="input-lh" value={data.ctaHref}
+                  onChange={(e) => setData({ ...data, ctaHref: e.target.value })} />
               </div>
             </div>
           </div>
 
-          {/* Features */}
           <ArraySection title="Key Features" items={data.features} placeholder="Enter a feature"
             onUpdate={(i, v) => updateArr("features", i, v)} onAdd={() => addArr("features")} onRemove={(i) => removeArr("features", i)} />
 
-          {/* Eligibility */}
           <ArraySection title="Eligibility Criteria" items={data.eligibility} placeholder="Enter an eligibility criterion"
             onUpdate={(i, v) => updateArr("eligibility", i, v)} onAdd={() => addArr("eligibility")} onRemove={(i) => removeArr("eligibility", i)} />
 
-          {/* Documents */}
           <ArraySection title="Documents Required" items={data.documents} placeholder="Enter a document"
             onUpdate={(i, v) => updateArr("documents", i, v)} onAdd={() => addArr("documents")} onRemove={(i) => removeArr("documents", i)} />
 
-          {/* Related Products */}
           <div className="card p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-bold" style={{ color: "var(--color-secondary)" }}>Related Products</h2>
@@ -283,10 +260,12 @@ export default function NewProductPage() {
             <div className="flex flex-col gap-3">
               {data.relatedProducts.map((rp, i) => (
                 <div key={i} className="flex gap-2 items-center">
-                  <input type="text" className="input-lh flex-1" placeholder="Label" value={rp.label} onChange={(e) => updateRelated(i, "label", e.target.value)} />
-                  <input type="text" className="input-lh flex-1" placeholder="Link (e.g. /loans/business-loan)" value={rp.href} onChange={(e) => updateRelated(i, "href", e.target.value)} />
+                  <input type="text" className="input-lh flex-1" placeholder="Label" value={rp.label}
+                    onChange={(e) => updateRelated(i, "label", e.target.value)} />
+                  <input type="text" className="input-lh flex-1" placeholder="Link (e.g. /loans/business-loan)" value={rp.href}
+                    onChange={(e) => updateRelated(i, "href", e.target.value)} />
                   <button onClick={() => setData({ ...data, relatedProducts: data.relatedProducts.filter((_, idx) => idx !== i) })}
-                    className="flex-shrink-0 p-2 rounded-lg transition-colors hover:bg-red-50" style={{ color: "#dc2626" }}>
+                    className="shrink-0 p-2 rounded-lg transition-colors hover:bg-red-50" style={{ color: "#dc2626" }}>
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -324,9 +303,11 @@ function ArraySection({ title, items, placeholder, onUpdate, onAdd, onRemove }: 
       <div className="flex flex-col gap-2.5">
         {items.map((item, i) => (
           <div key={i} className="flex gap-2 items-center">
-            <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: "var(--color-primary)", minWidth: "1.5rem" }}>{i + 1}</div>
-            <input type="text" className="input-lh flex-1" placeholder={placeholder} value={item} onChange={(e) => onUpdate(i, e.target.value)} />
-            <button onClick={() => onRemove(i)} className="flex-shrink-0 p-2 rounded-lg transition-colors hover:bg-red-50" style={{ color: "#dc2626" }}>
+            <div className="shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+              style={{ background: "var(--color-primary)", minWidth: "1.5rem" }}>{i + 1}</div>
+            <input type="text" className="input-lh flex-1" placeholder={placeholder} value={item}
+              onChange={(e) => onUpdate(i, e.target.value)} />
+            <button onClick={() => onRemove(i)} className="shrink-0 p-2 rounded-lg transition-colors hover:bg-red-50" style={{ color: "#dc2626" }}>
               <Trash2 size={15} />
             </button>
           </div>

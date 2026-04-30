@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -37,6 +37,7 @@ const ICON_MAP: Record<string, IconComponent> = {
 };
 
 const SESSION_KEY = "lh_admin_auth";
+const TOKEN_KEY = "lh_admin_token";
 
 interface ProductItem { category: string; slug: string; title: string }
 
@@ -50,13 +51,30 @@ export default function AdminPage() {
   const [loadingProducts, setLoadingProducts] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem(SESSION_KEY) === "true") {
-      setAuthed(true);
+    // Verify stored token is still valid against the server before trusting it
+    const token = sessionStorage.getItem(TOKEN_KEY);
+    if (token && sessionStorage.getItem(SESSION_KEY) === "true") {
+      fetch("/api/admin/session", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((r) => {
+          if (r.ok) {
+            setAuthed(true);
+          } else {
+            sessionStorage.removeItem(SESSION_KEY);
+            sessionStorage.removeItem(TOKEN_KEY);
+          }
+        })
+        .catch(() => {
+          sessionStorage.removeItem(SESSION_KEY);
+          sessionStorage.removeItem(TOKEN_KEY);
+        })
+        .finally(() => setChecking(false));
+    } else {
+      setChecking(false);
     }
-    setChecking(false);
   }, []);
 
-  // Load products after auth
   useEffect(() => {
     if (!authed) return;
     setLoadingProducts(true);
@@ -67,27 +85,35 @@ export default function AdminPage() {
       .finally(() => setLoadingProducts(false));
   }, [authed]);
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoginError("");
-    // Validate by attempting a write to a dummy route (will get 500 if auth passes but invalid slug)
-    const ping = await fetch("/api/cms", {
+
+    const res = await fetch("/api/admin/session", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-admin-password": password },
-      body: JSON.stringify({ category: "_ping", slug: "_ping", data: {} }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
     });
-    if (ping.status === 401) {
+
+    if (res.status === 429) {
+      setLoginError("Too many attempts. Please wait 15 minutes.");
+      return;
+    }
+    if (!res.ok) {
       setLoginError("Incorrect password. Please try again.");
       return;
     }
+
+    const { token } = await res.json() as { token: string };
     sessionStorage.setItem(SESSION_KEY, "true");
-    sessionStorage.setItem("lh_admin_pw", password);
+    sessionStorage.setItem(TOKEN_KEY, token);
     setAuthed(true);
+    setPassword(""); // clear password from state immediately
   }
 
   function handleLogout() {
     sessionStorage.removeItem(SESSION_KEY);
-    sessionStorage.removeItem("lh_admin_pw");
+    sessionStorage.removeItem(TOKEN_KEY);
     setAuthed(false);
     setPassword("");
     setProducts([]);
@@ -131,6 +157,7 @@ export default function AdminPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   autoFocus
                   required
+                  autoComplete="current-password"
                 />
               </div>
               {loginError && <p className="text-sm mt-2" style={{ color: "#dc2626" }}>{loginError}</p>}
@@ -151,7 +178,6 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen" style={{ background: "var(--color-neutral-50)" }}>
-      {/* Admin top bar */}
       <div className="sticky top-0 z-40 border-b"
         style={{ background: "#fff", borderColor: "var(--color-neutral-200)", boxShadow: "0 1px 0 0 rgba(0,0,0,0.06)" }}>
         <div className="container-lh flex items-center justify-between py-4">
@@ -184,7 +210,6 @@ export default function AdminPage() {
       </div>
 
       <div className="container-lh py-10">
-        {/* Header */}
         <div className="mb-10 flex items-start justify-between gap-4 flex-wrap">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -198,7 +223,6 @@ export default function AdminPage() {
               Edit loan and insurance page content. Changes go live immediately.
             </p>
           </div>
-          {/* New Product Button */}
           <Link
             href="/admin/new"
             className="btn btn-primary flex items-center gap-2"
@@ -214,7 +238,6 @@ export default function AdminPage() {
           </div>
         ) : (
           <>
-            {/* Loans section */}
             <section className="mb-10">
               <div className="flex items-center gap-2 mb-4">
                 <FileText size={16} style={{ color: "var(--color-primary)" }} />
@@ -223,7 +246,6 @@ export default function AdminPage() {
               </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {loans.map((p) => <ProductCard key={p.slug} product={p} colorClass="blue" />)}
-                {/* Add New Loan shortcut */}
                 <Link href="/admin/new" className="card p-5 flex flex-col items-center justify-center gap-2 border-dashed hover:border-blue-300 transition-colors min-h-[140px]"
                   style={{ borderStyle: "dashed", textDecoration: "none" }}>
                   <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "var(--color-primary-light)" }}>
@@ -234,7 +256,6 @@ export default function AdminPage() {
               </div>
             </section>
 
-            {/* Insurance section */}
             <section>
               <div className="flex items-center gap-2 mb-4">
                 <FileText size={16} style={{ color: "var(--color-secondary)" }} />
@@ -243,7 +264,6 @@ export default function AdminPage() {
               </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {insurance.map((p) => <ProductCard key={p.slug} product={p} colorClass="navy" />)}
-                {/* Add New Insurance shortcut */}
                 <Link href="/admin/new" className="card p-5 flex flex-col items-center justify-center gap-2 border-dashed hover:border-blue-300 transition-colors min-h-[140px]"
                   style={{ borderStyle: "dashed", textDecoration: "none" }}>
                   <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "var(--color-secondary-light)" }}>

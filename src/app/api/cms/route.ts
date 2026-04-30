@@ -1,7 +1,6 @@
 import { type NextRequest } from "next/server";
 import { readProductData, writeProductData } from "@/lib/cms";
-
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "lendinghub-admin";
+import { isAuthorizedAdmin } from "@/lib/security";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -10,6 +9,11 @@ export async function GET(request: NextRequest) {
 
   if (!category || !slug) {
     return Response.json({ error: "category and slug are required" }, { status: 400 });
+  }
+
+  // Validate to prevent path traversal even though readProductData also validates
+  if (!/^[a-z0-9-]+$/.test(category) || !/^[a-z0-9-]+$/.test(slug)) {
+    return Response.json({ error: "Invalid category or slug" }, { status: 400 });
   }
 
   try {
@@ -21,13 +25,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  // Check password header
-  const password = request.headers.get("x-admin-password");
-  if (password !== ADMIN_PASSWORD) {
+  if (!isAuthorizedAdmin(request)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: { category: string; slug: string; data: unknown };
+  let body: { category?: unknown; slug?: unknown; data?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -36,13 +38,26 @@ export async function POST(request: NextRequest) {
 
   const { category, slug, data } = body;
 
-  if (!category || !slug || !data) {
-    return Response.json({ error: "category, slug, and data are required" }, { status: 400 });
+  if (
+    typeof category !== "string" ||
+    typeof slug !== "string" ||
+    !data ||
+    typeof data !== "object"
+  ) {
+    return Response.json(
+      { error: "category (string), slug (string), and data (object) are required" },
+      { status: 400 }
+    );
   }
 
-  // Validate slug to prevent path traversal
-  if (!/^[a-z0-9-]+$/.test(slug) || !/^[a-z0-9-]+$/.test(category)) {
-    return Response.json({ error: "Invalid slug or category" }, { status: 400 });
+  // Strict slug/category validation — no path separators or special chars
+  if (!/^[a-z0-9-]{1,80}$/.test(slug) || !/^[a-z0-9-]{1,40}$/.test(category)) {
+    return Response.json({ error: "Invalid slug or category format" }, { status: 400 });
+  }
+
+  // Ping endpoint used by the admin login flow — return ok without writing
+  if (category === "_ping" && slug === "_ping") {
+    return Response.json({ ok: true });
   }
 
   try {
